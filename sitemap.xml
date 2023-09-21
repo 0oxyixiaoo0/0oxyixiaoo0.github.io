@@ -2,6 +2,15 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://greatchu-adhereno.top/2023/09/21/SQLi/</loc>
+    
+    <lastmod>2023-09-21</lastmod>
+    
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
     <loc>http://greatchu-adhereno.top/2023/09/09/uplabs/</loc>
     
     <lastmod>2023-09-20</lastmod>
@@ -88,14 +97,14 @@
   </url>
   
   <url>
-    <loc>http://greatchu-adhereno.top/tags/SQL/</loc>
+    <loc>http://greatchu-adhereno.top/tags/%E9%9D%B6%E5%9C%BA/</loc>
     <lastmod>2023-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://greatchu-adhereno.top/tags/Burpsuite/</loc>
+    <loc>http://greatchu-adhereno.top/tags/BurpSuite/</loc>
     <lastmod>2023-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
@@ -109,14 +118,14 @@
   </url>
   
   <url>
-    <loc>http://greatchu-adhereno.top/tags/%E9%9D%B6%E5%9C%BA/</loc>
+    <loc>http://greatchu-adhereno.top/tags/SQL/</loc>
     <lastmod>2023-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>http://greatchu-adhereno.top/tags/BurpSuite/</loc>
+    <loc>http://greatchu-adhereno.top/tags/Burpsuite/</loc>
     <lastmod>2023-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
