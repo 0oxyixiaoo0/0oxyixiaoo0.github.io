@@ -81,6 +81,13 @@
   </url>
   
   <url>
+    <loc>http://greatchu-adhereno.top/tags/upload/</loc>
+    <lastmod>2023-09-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>http://greatchu-adhereno.top/tags/XSS/</loc>
     <lastmod>2023-09-21</lastmod>
     <changefreq>weekly</changefreq>
@@ -96,13 +103,6 @@
   
   <url>
     <loc>http://greatchu-adhereno.top/tags/Burpsuite/</loc>
-    <lastmod>2023-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://greatchu-adhereno.top/tags/upload/</loc>
     <lastmod>2023-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
