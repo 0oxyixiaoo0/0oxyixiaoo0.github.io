@@ -2,16 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://greatchu-adhereno.top/2023/09/21/SQLi/</loc>
+    <loc>http://greatchu-adhereno.top/2023/09/09/uplabs/</loc>
     
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
   <url>
-    <loc>http://greatchu-adhereno.top/2023/09/09/uplabs/</loc>
+    <loc>http://greatchu-adhereno.top/2023/09/21/SQLi/</loc>
     
     <lastmod>2023-09-21</lastmod>
     
@@ -76,7 +76,7 @@
 
   <url>
     <loc>http://greatchu-adhereno.top/</loc>
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -84,49 +84,49 @@
   
   <url>
     <loc>http://greatchu-adhereno.top/tags/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/</loc>
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://greatchu-adhereno.top/tags/XSS/</loc>
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://greatchu-adhereno.top/tags/%E9%9D%B6%E5%9C%BA/</loc>
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://greatchu-adhereno.top/tags/BurpSuite/</loc>
-    <lastmod>2023-09-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>http://greatchu-adhereno.top/tags/upload/</loc>
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://greatchu-adhereno.top/tags/SQL/</loc>
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>http://greatchu-adhereno.top/tags/Burpsuite/</loc>
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>http://greatchu-adhereno.top/tags/upload/</loc>
+    <lastmod>2023-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -135,7 +135,7 @@
   
   <url>
     <loc>http://greatchu-adhereno.top/categories/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/</loc>
-    <lastmod>2023-09-21</lastmod>
+    <lastmod>2023-09-22</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
